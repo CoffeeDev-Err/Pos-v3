@@ -1,0 +1,23 @@
+/* Users */
+.user-avatar-sm {
+  width: 30px;
+  height: 30px;
+  background: #ccfbf1;
+  color: #0f766e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+/* Keep the signed-in user's row visually stable across themes (no Bootstrap light-row effect). */
+.table-hover > tbody > tr.users-self-row > * {
+  background-color: transparent;
+}
+
+.table-hover > tbody > tr.users-self-row:hover > * {
+  background-color: transparent;
+}

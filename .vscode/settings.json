@@ -1,0 +1,8 @@
+{
+  "php.validate.executablePath": "C:\\Xamp-new\\php\\php.exe",
+  "php.debug.executablePath": "C:\\Xamp-new\\php\\php.exe",
+  "intelephense.environment.phpVersion": "8.2.12",
+  "intelephense.environment.includePaths": [
+    "backend/vendor"
+  ]
+}

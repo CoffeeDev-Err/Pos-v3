@@ -1,0 +1,49 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies and build output
+node_modules
+backend/vendor
+dist
+dist-ssr
+backend/public/build
+backend/public/hot
+
+# Environment files
+*.local
+.env
+.env.*
+backend/.env
+!.env.example
+!backend/.env.example
+
+# Laravel runtime files
+backend/storage/*.key
+backend/storage/pail
+backend/.phpunit.cache
+backend/.phpunit.result.cache
+backend/auth.json
+
+# Editor directories and files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Spec / planning files
+pos-changes-prompt.md
+
+# Local notes
+pass.txt
