@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import '../styles/login.css';
+import { getErrorMessage } from '../utils/errors';
 
 export default function Login({ onLogin, loading, error, theme, onToggleTheme }) {
   const [username, setUsername] = useState('');
@@ -50,7 +51,7 @@ export default function Login({ onLogin, loading, error, theme, onToggleTheme })
         setFormError('This account has been disabled. Contact your administrator.');
       } else if (msg) {
         // Show our own custom error messages (deactivated account, etc.)
-        setFormError(msg);
+        setFormError(getErrorMessage(err, { fallback: 'Unable to sign in. Please check your credentials and try again.' }));
       } else {
         setFormError('Unable to sign in. Please check your credentials and try again.');
       }

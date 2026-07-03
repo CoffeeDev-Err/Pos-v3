@@ -1,3 +1,5 @@
+import { normalizeError, notifyError } from './errors';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
 
 export function getAuthToken() {
@@ -27,11 +29,17 @@ async function request(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method || 'GET',
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method || 'GET',
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    });
+  } catch (err) {
+    const normalized = notifyError(err, { context: 'api' });
+    throw Object.assign(new Error(normalized.message), normalized);
+  }
 
   const text = await response.text();
   let data = null;
@@ -45,7 +53,11 @@ async function request(path, options = {}) {
 
   if (!response.ok) {
     const message = data?.message || data?.error || `Request failed with status ${response.status}`;
-    throw Object.assign(new Error(message), { status: response.status, errors: data?.errors });
+    const normalized = normalizeError(
+      Object.assign(new Error(message), { status: response.status, errors: data?.errors }),
+      { context: 'api' }
+    );
+    throw Object.assign(new Error(normalized.message), normalized, { errors: data?.errors });
   }
 
   return data;

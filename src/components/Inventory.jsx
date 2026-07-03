@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { getErrorMessage } from '../utils/errors';
 
 // Products whose name contains "egg" are considered harvest/poultry products
 const isPoultryProduct = (p) => p.name.toLowerCase().includes('egg');
@@ -175,7 +176,7 @@ export default function Inventory({ products, categories, stockMovements, onStoc
       setStockInForm({ productId: '', unitKey: 'base', qty: '', note: '' });
       setShowStockIn(false);
     } catch (err) {
-      setError(err.message || 'An error occurred while recording the stock entry. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while recording the stock entry. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -233,7 +234,7 @@ export default function Inventory({ products, categories, stockMovements, onStoc
       setHarvestForm({ productId: '', qty: '', variantQtys: {}, note: 'Harvest' });
       setShowHarvest(false);
     } catch (err) {
-      setHarvestError(err.message || 'Failed to save harvest.');
+      setHarvestError(getErrorMessage(err, { fallback: 'Failed to save harvest.' }));
     } finally {
       setHarvestSaving(false);
     }

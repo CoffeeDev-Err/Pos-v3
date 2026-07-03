@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import '../styles/pos.css';
 import '../styles/receipt.css';
 import { printViaBluetooth, openCashDrawerViaBluetooth } from '../utils/escpos';
+import { getErrorMessage, isErrorStatusMessage, notifyError } from '../utils/errors';
 
 // Known category visual config — fallback palette for custom categories
 const KNOWN_CONFIG = {
@@ -281,7 +282,7 @@ export default function POS({ products, currentUser, categories, settings, onCre
         resetCart();
       }
     } catch (err) {
-      setProcessError(err.message || 'An error occurred while processing the transaction. Please try again.');
+      setProcessError(getErrorMessage(err, { fallback: 'An error occurred while processing the transaction. Please try again.' }));
     } finally {
       setIsProcessing(false);
     }
@@ -380,7 +381,8 @@ export default function POS({ products, currentUser, categories, settings, onCre
         customer:      lastTxn.customer,
       }, setPrintStatus);
     } catch (err) {
-      setPrintStatus('Error: ' + err.message);
+      const normalized = notifyError(err, { context: 'bluetooth-print' });
+      setPrintStatus(normalized.message);
     } finally {
       setIsPrinting(false);
     }
@@ -903,7 +905,7 @@ export default function POS({ products, currentUser, categories, settings, onCre
                   <div className="text-center small text-muted">{settings.receiptFooter || 'Salamat sa inyong pagbili!'}</div>
                 </div>
                 {printStatus && (
-                  <div className={`p-2 text-center small ${printStatus.includes('Error') ? 'text-danger bg-danger-subtle' : 'text-success bg-success-subtle'}`}>
+                  <div className={`p-2 text-center small ${isErrorStatusMessage(printStatus) ? 'text-danger bg-danger-subtle' : 'text-success bg-success-subtle'}`}>
                     {printStatus}
                   </div>
                 )}
@@ -1032,4 +1034,3 @@ export default function POS({ products, currentUser, categories, settings, onCre
     );
   }
 }
-

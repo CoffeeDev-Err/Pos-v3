@@ -2,6 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import Login from './components/Login';
 import Layout from './components/Layout';
 import LoadingSkeleton from './components/LoadingSkeleton';
+import GlobalErrorToast from './components/GlobalErrorToast';
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const POS = lazy(() => import('./components/POS'));
 const Products = lazy(() => import('./components/Products'));
@@ -22,12 +23,14 @@ import {
   addAuditLog,
 } from './utils/api';
 import { useAppData } from './hooks/useAppData';
+import { getErrorMessage, normalizeError } from './utils/errors';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [globalError, setGlobalError] = useState(null);
   const [theme, setTheme] = useState(() => {
     if (typeof window === 'undefined') return 'light';
     const saved = localStorage.getItem('pos_theme');
@@ -102,6 +105,33 @@ export default function App() {
     localStorage.setItem('pos_theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    const onGlobalError = (event) => {
+      setGlobalError(event.detail || normalizeError(event.error));
+    };
+    const onUnhandledRejection = (event) => {
+      setGlobalError(normalizeError(event.reason));
+    };
+    const onWindowError = (event) => {
+      setGlobalError(normalizeError(event.error || event.message));
+    };
+
+    window.addEventListener('app:error', onGlobalError);
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
+    window.addEventListener('error', onWindowError);
+    return () => {
+      window.removeEventListener('app:error', onGlobalError);
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
+      window.removeEventListener('error', onWindowError);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!globalError) return undefined;
+    const timeoutId = setTimeout(() => setGlobalError(null), 6000);
+    return () => clearTimeout(timeoutId);
+  }, [globalError]);
+
   const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
   const handleLogin = async (username, password) => {
@@ -120,7 +150,7 @@ export default function App() {
         // Best effort only; login should not fail when audit write fails.
       }
     } catch (err) {
-      setLoadError(err.message || 'Login failed.');
+      setLoadError(getErrorMessage(err, { fallback: 'Login failed. Please check your credentials and try again.' }));
       throw err;
     } finally {
       setLoading(false);
@@ -165,7 +195,12 @@ export default function App() {
   }, [currentUser, handleLogout]);
 
   if (!currentUser) {
-    return <Login onLogin={handleLogin} loading={loading} error={loadError} theme={theme} onToggleTheme={toggleTheme} />;
+    return (
+      <>
+        <Login onLogin={handleLogin} loading={loading} error={loadError} theme={theme} onToggleTheme={toggleTheme} />
+        <GlobalErrorToast error={globalError} onClose={() => setGlobalError(null)} />
+      </>
+    );
   }
 
   const handleUpdateUserWithSessionSync = async (id, payload) => {
@@ -271,6 +306,7 @@ export default function App() {
       <Suspense fallback={<LoadingSkeleton variant={skeletonVariant} />}>
         {renderPage()}
       </Suspense>
+      <GlobalErrorToast error={globalError} onClose={() => setGlobalError(null)} />
     </Layout>
   );
 }

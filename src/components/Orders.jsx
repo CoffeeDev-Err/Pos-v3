@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { openCashDrawerViaBluetooth, printViaBluetooth } from '../utils/escpos';
+import { getErrorMessage, isErrorStatusMessage, notifyError } from '../utils/errors';
 import '../styles/receipt.css';
 
 function normalizeMoney(value) {
@@ -115,7 +116,7 @@ export default function Orders({
     try {
       await onUpdateOrder(order.id, { status: 'onprocess' });
     } catch (err) {
-      setError(err.message || 'An error occurred while accepting the order. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while accepting the order. Please try again.' }));
     }
   };
 
@@ -135,7 +136,7 @@ export default function Orders({
       setDeclineOrder(null);
       setDeclineReason('');
     } catch (err) {
-      setError(err.message || 'An error occurred while declining the order. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while declining the order. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -195,7 +196,7 @@ export default function Orders({
         await onAcquireOrderEditLock(order.id);
         setLockedOrderId(order.id);
       } catch (err) {
-        setError(err.message || 'This order is currently being edited by another user. Please try again later.');
+        setError(getErrorMessage(err, { fallback: 'This order is currently being edited by another user. Please try again later.' }));
         return;
       }
     }
@@ -371,7 +372,7 @@ export default function Orders({
 
       closeEditModal();
     } catch (err) {
-      setEditError(err.message || 'An error occurred while updating the order. Please try again.');
+      setEditError(getErrorMessage(err, { fallback: 'An error occurred while updating the order. Please try again.' }));
     } finally {
       setEditSaving(false);
     }
@@ -433,7 +434,7 @@ export default function Orders({
       setShowPayModal(false);
       setSelectedOrder(null);
     } catch (err) {
-      setError(err.message || 'An error occurred while completing the payment. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while completing the payment. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -461,7 +462,8 @@ export default function Orders({
         customer:      order.customer,
       }, setPrintStatus);
     } catch (err) {
-      setPrintStatus('Error: ' + err.message);
+      const normalized = notifyError(err, { context: 'bluetooth-print' });
+      setPrintStatus(normalized.message);
     } finally {
       setIsPrinting(false);
     }
@@ -1032,7 +1034,7 @@ export default function Orders({
                   <div className="text-center small text-muted">{settings.receiptFooter || 'Salamat sa inyong pagbili!'}</div>
                 </div>
                 {printStatus && (
-                  <div className={`p-2 text-center small ${printStatus.includes('Error') ? 'text-danger' : 'text-success'}`}>
+                  <div className={`p-2 text-center small ${isErrorStatusMessage(printStatus) ? 'text-danger' : 'text-success'}`}>
                     {printStatus}
                   </div>
                 )}

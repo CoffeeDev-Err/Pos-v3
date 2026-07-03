@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { getErrorMessage } from '../utils/errors';
 
 const fmt = (n) => `₱${Number(n || 0).toFixed(2)}`;
 const todayYmd = () => {
@@ -277,7 +278,7 @@ export default function CreditLedger({
       await onAddCreditPayment(paymentTarget.id, amt, paymentNote.trim());
       setPaymentTarget(null);
     } catch (err) {
-      setPaymentError(err.message || 'Failed to record payment.');
+      setPaymentError(getErrorMessage(err, { fallback: 'Failed to record payment.' }));
     } finally {
       setIsSubmitting(false);
     }

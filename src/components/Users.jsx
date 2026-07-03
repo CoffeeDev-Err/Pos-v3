@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import '../styles/users.css';
+import { getErrorMessage } from '../utils/errors';
 
 const ROLE_INFO = {
   superadmin: { label: 'Super Admin', color: 'danger', icon: 'bi-shield-fill-check' },
@@ -70,7 +71,7 @@ export default function Users({ users, currentUser, auditLogs, onCreateUser, onU
       }
       setShowModal(false);
     } catch (err) {
-      setError(err.message || 'An error occurred while saving the user. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while saving the user. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -84,7 +85,7 @@ export default function Users({ users, currentUser, auditLogs, onCreateUser, onU
       await onUpdateUserStatus(id, { active: !target?.active });
       setToggleId(null);
     } catch (err) {
-      setError(err.message || 'An error occurred while updating the user. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while updating the user. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -98,7 +99,7 @@ export default function Users({ users, currentUser, auditLogs, onCreateUser, onU
       await onDeleteUser(id, target?.name);
       setDeleteId(null);
     } catch (err) {
-      setError(err.message || 'An error occurred while deleting the user. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while deleting the user. Please try again.' }));
     } finally {
       setSaving(false);
     }

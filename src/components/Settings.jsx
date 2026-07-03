@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { changePassword, migrateOrNumbers } from '../utils/api';
+import { getErrorMessage } from '../utils/errors';
 
 export default function Settings({ settings, onSaveSettings, currentUser }) {
   const [store, setStore] = useState({
@@ -35,7 +36,7 @@ export default function Settings({ settings, onSaveSettings, currentUser }) {
     } catch (err) {
       const msg = err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
         ? 'Current password is incorrect.'
-        : err.message || 'Failed to change password.';
+        : getErrorMessage(err, { fallback: 'Failed to change password.' });
       setPwError(msg);
     } finally {
       setPwSaving(false);
@@ -65,7 +66,7 @@ export default function Settings({ settings, onSaveSettings, currentUser }) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
-      setError(err.message || 'An error occurred while saving the settings. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while saving the settings. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -201,10 +202,18 @@ export default function Settings({ settings, onSaveSettings, currentUser }) {
                 Re-assigns sequential OR numbers (<code>0000000001</code>, <code>0000000002</code>, &hellip;) to <strong>all</strong> transactions in chronological order and resets the counter. Run this once to fix any gaps or wrong numbers.
               </p>
               {migrateResult !== null && (
-                <div className={`alert py-2 small mb-3 ${migrateResult === 0 ? 'alert-info' : 'alert-success'}`}>
-                  {migrateResult === 0
-                    ? 'No transactions found.'
-                    : `Done! ${migrateResult} transaction${migrateResult > 1 ? 's' : ''} re-numbered from 0000000001.`}
+                <div className={`alert py-2 small mb-3 ${
+                  typeof migrateResult === 'string'
+                    ? 'alert-danger'
+                    : migrateResult === 0
+                      ? 'alert-info'
+                      : 'alert-success'
+                }`}>
+                  {typeof migrateResult === 'string'
+                    ? migrateResult
+                    : migrateResult === 0
+                      ? 'No transactions found.'
+                      : `Done! ${migrateResult} transaction${migrateResult > 1 ? 's' : ''} re-numbered from 0000000001.`}
                 </div>
               )}
               <button
@@ -217,7 +226,7 @@ export default function Settings({ settings, onSaveSettings, currentUser }) {
                     const count = await migrateOrNumbers();
                     setMigrateResult(count);
                   } catch (err) {
-                    setMigrateResult(`Error: ${err.message}`);
+                    setMigrateResult(getErrorMessage(err, { fallback: 'OR number migration failed.' }));
                   } finally {
                     setMigrating(false);
                   }

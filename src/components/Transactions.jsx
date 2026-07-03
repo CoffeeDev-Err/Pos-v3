@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { printViaBluetooth } from '../utils/escpos';
+import { getErrorMessage, isErrorStatusMessage, notifyError } from '../utils/errors';
 
 const TYPE_LABELS = {
   cash: 'Cash',
@@ -107,7 +108,8 @@ export default function Transactions({ transactions, orders, settings, onVoidTra
         customer: item.customer,
       }, setPrintStatus);
     } catch (err) {
-      setPrintStatus('Error: ' + err.message);
+      const normalized = notifyError(err, { context: 'bluetooth-print' });
+      setPrintStatus(normalized.message);
     } finally {
       setIsPrinting(false);
     }
@@ -134,7 +136,7 @@ export default function Transactions({ transactions, orders, settings, onVoidTra
       setVoidTarget(null);
       if (viewItem?.id === voidTarget.id) setViewItem(null);
     } catch (err) {
-      setVoidError(err.message || 'Failed to void transaction.');
+      setVoidError(getErrorMessage(err, { fallback: 'Failed to void transaction.' }));
     } finally {
       setIsVoiding(false);
     }
@@ -399,7 +401,7 @@ export default function Transactions({ transactions, orders, settings, onVoidTra
                   </div>
                 </div>
                 {printStatus && (
-                  <div className={`p-2 text-center small ${printStatus.startsWith('Error') ? 'text-danger' : 'text-success'}`}>
+                  <div className={`p-2 text-center small ${isErrorStatusMessage(printStatus) ? 'text-danger' : 'text-success'}`}>
                     {printStatus}
                   </div>
                 )}

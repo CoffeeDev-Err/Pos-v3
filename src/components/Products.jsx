@@ -6,6 +6,7 @@ import {
   ProductModal,
   DeleteConfirmModal,
 } from './products/index';
+import { getErrorMessage } from '../utils/errors';
 
 const EMPTY = {
   name: '', category: '',
@@ -91,7 +92,7 @@ export default function Products({
       setNewCatMode(false);
       setNewCatInput('');
     } catch (err) {
-      setError(err.message || 'An error occurred while adding the category. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while adding the category. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -165,7 +166,7 @@ export default function Products({
       }
       setShowModal(false);
     } catch (err) {
-      setError(err.message || 'An error occurred while saving the product. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while saving the product. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -179,7 +180,7 @@ export default function Products({
       await onDeleteProduct(deleteId, productName);
       setDeleteId(null);
     } catch (err) {
-      setError(err.message || 'An error occurred while deleting the product. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while deleting the product. Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -199,7 +200,7 @@ export default function Products({
       await onDeleteCategory(cat, { deleteProducts: inUse });
       if (catFilter === cat) setCatFilter('All');
     } catch (err) {
-      setError(err.message || 'An error occurred while deleting the category. Please try again.');
+      setError(getErrorMessage(err, { fallback: 'An error occurred while deleting the category. Please try again.' }));
     } finally {
       setSaving(false);
     }

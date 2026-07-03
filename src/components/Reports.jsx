@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { printA4Report } from '../utils/escpos';
 import { toLocalDateString } from '../utils/date';
 import { useReportsData } from '../hooks/useReportsData';
+import { getErrorMessage } from '../utils/errors';
 import {
   ReportsFilters,
   ReportsSummaryCards,
@@ -205,7 +206,7 @@ export default function Reports({ transactions, products, expenses, currentUser,
       setExpenseForm({ date: today, amount: '', category: '', note: '' });
       setShowExpenseModal(false);
     } catch (err) {
-      setExpenseError(err.message || 'Failed to add expense.');
+      setExpenseError(getErrorMessage(err, { fallback: 'Failed to add expense.' }));
     } finally {
       setExpenseSaving(false);
     }
